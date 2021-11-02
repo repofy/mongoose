@@ -1,6 +1,6 @@
 import { Filter, Repository } from '@repofy/protocols'
 import { MongooseRepository } from '../mongoose-repository'
-import { Document, model, Schema } from 'mongoose'
+import { Document, model, Schema, Types } from 'mongoose'
 import { Test } from './test'
 import { timestampsPtBR } from '../options'
 
@@ -9,6 +9,10 @@ const testSchema = new Schema(
     nome: {
       type: String,
       required: [true, 'Nome não informado'],
+    },
+    identificador: {
+      type: Types.ObjectId,
+      required: [true, 'Identificador não informado'],
     },
     ordem: {
       type: Number,

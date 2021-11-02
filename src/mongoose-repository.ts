@@ -225,12 +225,6 @@ export abstract class MongooseRepository<
             ),
           },
         }
-      case ComparatorOperatorEnum.IN:
-        return {
-          [comparator.key]: {
-            [ComparatorOperatorMongooseEnum.IN]: comparator.values,
-          },
-        }
       case ComparatorOperatorEnum.BETWEEN:
         return {
           [comparator.key]: {
@@ -266,15 +260,23 @@ export abstract class MongooseRepository<
         if (comparator.options?.convertToObjectId) {
           return {
             [comparator.key]: {
-              [ComparatorOperatorMongooseEnum[comparator.operator]]:
-                ObjectId.convert(comparator.value),
+              [ComparatorOperatorMongooseEnum[comparator.operator]]: [
+                ComparatorOperatorEnum.IN,
+                ComparatorOperatorEnum.NIN,
+              ].includes(comparator.operator)
+                ? comparator.values?.map((v: any) => ObjectId.convert(v))
+                : ObjectId.convert(comparator.value),
             },
           }
         } else {
           return {
             [comparator.key]: {
-              [ComparatorOperatorMongooseEnum[comparator.operator]]:
-                comparator.value,
+              [ComparatorOperatorMongooseEnum[comparator.operator]]: [
+                ComparatorOperatorEnum.IN,
+                ComparatorOperatorEnum.NIN,
+              ].includes(comparator.operator)
+                ? comparator.values
+                : comparator.value,
             },
           }
         }

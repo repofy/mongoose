@@ -20,46 +20,54 @@ describe('Mongoose Repository', () => {
   const docs: Test[] = [
     {
       nome: 'Teste 1',
+      identificador: ObjectId.generate(),
       ordem: 1,
       data: new Date(),
       ativo: true,
     },
     {
       nome: 'Teste 2',
+      identificador: ObjectId.generate(),
       ordem: 2,
       data: new Date(),
       ativo: true,
     },
     {
       nome: 'Teste 3',
+      identificador: ObjectId.generate(),
       ordem: 3,
       data: new Date(),
       ativo: true,
     },
     {
       nome: 'Teste 4',
+      identificador: ObjectId.generate(),
       ordem: 4,
       data: new Date(),
     },
     {
       nome: 'Teste 5',
+      identificador: ObjectId.generate(),
       ordem: 5,
       data: new Date(),
       ativo: true,
     },
     {
       nome: 'Teste 6',
+      identificador: ObjectId.generate(),
       ordem: 6,
       data: new Date(),
     },
     {
       nome: 'Teste 7',
+      identificador: ObjectId.generate(),
       ordem: 7,
       data: new Date(),
       ativo: false,
     },
     {
       nome: 'Teste 8',
+      identificador: ObjectId.generate(),
       ordem: 8,
       data: new Date(),
       ativo: false,
@@ -79,6 +87,7 @@ describe('Mongoose Repository', () => {
       docs.map((d) => {
         return {
           ...d,
+          identificador: ObjectId.convert(d.identificador),
           __v: 0,
         }
       }),
@@ -87,6 +96,7 @@ describe('Mongoose Repository', () => {
       const doc: any = {
         id: listInserted.insertedIds[i].toHexString(),
         nome: docs[i].nome,
+        identificador: docs[i].identificador,
         ordem: docs[i].ordem,
         data: docs[i].data,
         versao: 0,
@@ -141,6 +151,7 @@ describe('Mongoose Repository', () => {
   test('inserir um registro', async () => {
     const newDoc: Test = {
       nome: 'Teste Novo',
+      identificador: ObjectId.generate(),
       ordem: 100,
       data: new Date(),
     }
@@ -156,6 +167,7 @@ describe('Mongoose Repository', () => {
   test('retornar exceção ao inserir registro inválido', async () => {
     const newDoc: Test = {
       nome: null,
+      identificador: ObjectId.generate(),
       ordem: 0,
       data: new Date(),
     }
@@ -232,6 +244,7 @@ describe('Mongoose Repository', () => {
     const filter = new Filter().and(Comparator.eq('ordem', 99))
     const doc: Test = {
       nome: 'Teste inserido',
+      identificador: ObjectId.generate(),
       ordem: 99,
       data: new Date(),
     }
@@ -291,6 +304,18 @@ describe('Mongoose Repository', () => {
     expect(count).toBe(docs.filter((d) => d.ordem > 2).length)
   })
 
+  test('count com filtro in com conversão para o tipo ObjectId', async () => {
+    const filter = new Filter().and(
+      Comparator.in(
+        'identificador',
+        [docsSavedWithoutAtivoFalse[1].identificador],
+        { convertToObjectId: true },
+      ),
+    )
+    const count = await TestRepository.count(filter)
+    expect(count).toBe(1)
+  })
+
   test('deve retornar o primeiro item da lista seguindo a ordenação', async () => {
     const ultimo =
       docsSavedWithoutAtivoFalse[docsSavedWithoutAtivoFalse.length - 1]
@@ -344,9 +369,7 @@ describe('Mongoose Repository', () => {
   })
 
   test('deve retornar os registros esperados com base na operação OR', async () => {
-    const registros = await docsSaved.filter(
-      (d) => d.ordem === 1 || d.ordem === 4,
-    )
+    const registros = docsSaved.filter((d) => d.ordem === 1 || d.ordem === 4)
 
     const filter = new Filter().or([
       Comparator.eq('ordem', 1),
@@ -492,7 +515,7 @@ describe('Mongoose Repository', () => {
         },
         {
           empresa: {
-            $in: [empresaId],
+            $in: [ObjectId.convert(empresaId)],
           },
         },
       ],
@@ -563,16 +586,19 @@ describe('Mongoose Repository', () => {
     const list = await TestRepository.insertMany([
       {
         nome: 'Inserindo vários',
+        identificador: ObjectId.generate(),
         ordem: 20,
         data: new Date(),
       },
       {
         nome: 'Teste vários 2',
+        identificador: ObjectId.generate(),
         ordem: 21,
         data: new Date(),
       },
       {
         nome: 'Teste vários 3',
+        identificador: ObjectId.generate(),
         ordem: 22,
         data: new Date(),
       },
