@@ -19,7 +19,6 @@ import {
   VersionRepositoryError,
 } from '@repofy/protocols'
 import { DateUtil } from './util'
-import { TimestampConfig } from './options'
 
 export abstract class MongooseRepository<
   T extends Document,
@@ -27,10 +26,7 @@ export abstract class MongooseRepository<
   U extends BaseEntity<V>,
 > implements Repository<V, U>
 {
-  constructor(
-    protected readonly doc: Model<T>,
-    protected readonly timestampConfig: TimestampConfig,
-  ) {}
+  constructor(protected readonly doc: Model<T>) {}
 
   protected static prepareKeys(doc: any): any {
     if (!doc) {
@@ -366,11 +362,19 @@ export abstract class MongooseRepository<
   }
 
   fieldUpdatedAt(): string {
-    return this.timestampConfig.updatedAt
+    const timestamps = this.doc.schema.get('timestamps') as any
+    if (!timestamps) {
+      return null
+    }
+    return timestamps?.updatedAt
   }
 
   fieldCreatedAt(): string {
-    return this.timestampConfig.createdAt
+    const timestamps = this.doc.schema.get('timestamps') as any
+    if (!timestamps) {
+      return null
+    }
+    return timestamps?.createdAt
   }
 
   fieldActive(): string {

@@ -45,5 +45,4 @@ class TestRepository
 
 export default new TestRepository(
   model<TestDocument>('test', testSchema, 'tests', true),
-  timestampsPtBR,
 )
