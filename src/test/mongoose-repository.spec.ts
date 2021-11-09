@@ -256,14 +256,18 @@ describe('Mongoose Repository', () => {
       const obj: any = {
         key1: 1,
         test: docsSaved[1].id,
+        test2: docsSaved[2].id,
       }
 
-      const inserted = await Test2Repository.insert(obj, 'test')
+      const inserted = await Test2Repository.insert(obj, ['test', 'test2'])
       expect(inserted).not.toBeNull()
       expect(inserted.key1).toBe(obj.key1)
       expect(inserted.test).not.toBeNull()
       expect(inserted.test.id).toStrictEqual(docsSaved[1].id)
       expect(inserted.test.nome).toStrictEqual(docsSaved[1].nome)
+      expect(inserted.test2).not.toBeNull()
+      expect(inserted.test2.id).toStrictEqual(docsSaved[2].id)
+      expect(inserted.test2.nome).toStrictEqual(docsSaved[2].nome)
     })
 
     test('não deve popular o registro de referência', async () => {
