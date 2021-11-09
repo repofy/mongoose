@@ -22,6 +22,10 @@ const testSchema = new Schema(
       type: Types.ObjectId,
       ref: 'test',
     },
+    test2: {
+      type: Types.ObjectId,
+      ref: 'test',
+    },
   },
   {
     timestamps: timestampsPtBR,

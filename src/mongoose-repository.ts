@@ -521,9 +521,11 @@ export abstract class MongooseRepository<
       const obj = MongooseRepository.prepareKeys(doc)
 
       const list = MongooseRepository.convertStringToArray(populate)
-      let populateMongoose: string[]
+      const populateMongoose: string[] = []
       for (const pop of list) {
-        populateMongoose = MongooseRepository.populateOptions(pop.split('.'))
+        populateMongoose.push(
+          MongooseRepository.populateOptions(pop.split('.')),
+        )
       }
 
       const [docSaved] = (await this.doc.insertMany(obj, {

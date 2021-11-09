@@ -17,4 +17,5 @@ export interface Test2 extends BaseEntity<string> {
   'ar-ray'?: Test2Array[]
   obj?: Test2Inner
   test?: Test
+  test2?: Test
 }
