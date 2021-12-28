@@ -511,7 +511,7 @@ export abstract class MongooseRepository<
     }
   }
 
-  async insert(doc: U, populate?: string | string[]): Promise<U> {
+  async insert(doc: Partial<U>, populate?: string | string[]): Promise<U> {
     try {
       delete doc.id
       delete doc.versao
@@ -551,7 +551,10 @@ export abstract class MongooseRepository<
     }
   }
 
-  async insertMany(docs: U[], populate?: string | string[]): Promise<U[]> {
+  async insertMany(
+    docs: Partial<U>[],
+    populate?: string | string[],
+  ): Promise<U[]> {
     try {
       docs.forEach((d) => delete d.id)
       const listDocs = docs.map((doc) => MongooseRepository.prepareKeys(doc))
@@ -575,7 +578,7 @@ export abstract class MongooseRepository<
 
   async update(
     id: V,
-    doc: U,
+    doc: Partial<U>,
     populate?: string | string[],
     includeAll = false,
   ): Promise<U> {
@@ -604,7 +607,7 @@ export abstract class MongooseRepository<
   }
 
   async upsert(
-    doc: U,
+    doc: Partial<U>,
     filter?: Filter,
     populate?: string | string[],
   ): Promise<U> {
@@ -622,7 +625,7 @@ export abstract class MongooseRepository<
   }
 
   protected async updateDoc(
-    doc: U,
+    doc: Partial<U>,
     docDb: T,
     populate?: string | string[],
   ): Promise<U> {
@@ -673,7 +676,7 @@ export abstract class MongooseRepository<
 
   async updateMany(
     filter: Filter,
-    doc: U,
+    doc: Partial<U>,
     populate?: string | string[],
     includeAll?: boolean,
   ): Promise<U[]> {
@@ -704,7 +707,7 @@ export abstract class MongooseRepository<
     return totalElements?.length ? totalElements[0].count : 0
   }
 
-  async logicDelete(id: V): Promise<void> {
+  async logicDelete(id: V): Promise<U> {
     const docDb = await this.findByIdNative(id)
     if (!docDb) {
       throw new RegisterNotFoundError()
@@ -716,9 +719,11 @@ export abstract class MongooseRepository<
     docDb.increment()
 
     await docDb.save()
+
+    return this.findById(id, null, true)
   }
 
-  async logicActive(id: V): Promise<void> {
+  async logicActive(id: V): Promise<U> {
     const docDb = await this.findByIdNative(id)
     if (!docDb) {
       throw new RegisterNotFoundError()
@@ -730,5 +735,7 @@ export abstract class MongooseRepository<
     docDb.increment()
 
     await docDb.save()
+
+    return this.findById(id)
   }
 }
