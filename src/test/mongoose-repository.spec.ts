@@ -129,7 +129,14 @@ describe('Mongoose Repository', () => {
     })
 
     test('deve obter todos os registros', async () => {
-      const listFinds = await TestRepository.find(null, null, null, true)
+      const listFinds = await TestRepository.find(
+        null,
+        null,
+        null,
+        null,
+        null,
+        true,
+      )
       expect(listFinds).toStrictEqual(docsSaved)
     })
 
@@ -163,6 +170,25 @@ describe('Mongoose Repository', () => {
       const list = await TestRepository.find(filter)
 
       expect(list?.length).toBe(docsSavedWithoutAtivoFalse.length)
+    })
+
+    test('deve retornar apenas os campos selecionados', async () => {
+      const lista = await TestRepository.find(null, null, null, {
+        ordem: true,
+      })
+
+      expect(lista).not.toBeNull()
+
+      for (const item of lista) {
+        expect(Object.keys(item)).toStrictEqual(['id', 'ordem'])
+      }
+    })
+
+    test('deve retornar um número limite de itens', async () => {
+      const lista = await TestRepository.find(null, null, null, null, 2)
+
+      expect(lista).not.toBeNull()
+      expect(lista.length).toBe(2)
     })
   })
 
@@ -459,7 +485,7 @@ describe('Mongoose Repository', () => {
     test('deve excluir logicamente informando id', async () => {
       await TestRepository.logicDelete(docsSaved[0].id)
 
-      const docs = await TestRepository.find(null, null, null, true)
+      const docs = await TestRepository.find(null, null, null, null, null, true)
       for (const doc of docs) {
         if (doc.id === docsSaved[0].id) {
           expect(doc.ativo).toBeFalsy()
@@ -485,7 +511,7 @@ describe('Mongoose Repository', () => {
     test('deve reativar um registro informando o id', async () => {
       const id = docsSaved[0].id
       await TestRepository.logicDelete(id)
-      let doc = await TestRepository.findById(id, null, true)
+      let doc = await TestRepository.findById(id, null, null, true)
       expect(doc).not.toBeNull()
       expect(doc.ativo).toBeFalsy()
       expect(doc.versao).toBe(Number(docsSaved[0].versao) + 1)
