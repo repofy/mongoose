@@ -497,7 +497,7 @@ export abstract class MongooseRepository<
       const totalElements = await this.count(filter, includeAll)
 
       let page = 0
-      if (!first || !pageSize) {
+      if (first && pageSize) {
         page = Math.ceil(first / pageSize)
       }
 
