@@ -14,6 +14,7 @@ import {
   Repository,
   RepositoryError,
   ResultPaged,
+  SelectField,
   Sort,
   ValidationError,
   VersionRepositoryError,
@@ -342,6 +343,16 @@ export abstract class MongooseRepository<
     return sortNative
   }
 
+  protected static convertSelectToNative(select: SelectField): any {
+    const selectNative: any = {}
+    if (select && Object.keys(select)?.length) {
+      Object.keys(select).forEach((key) => {
+        selectNative[key] = select[key] ? 1 : 0
+      })
+    }
+    return selectNative
+  }
+
   protected async findByIdNative(id: any): Promise<Document> {
     const objectId = MongooseRepository.convertToIdOrFail(id)
     try {
@@ -410,6 +421,8 @@ export abstract class MongooseRepository<
     filter?: Filter,
     populate?: string | string[],
     sort?: Sort | Sort[],
+    select?: SelectField,
+    limit?: number,
     includeAll = false,
   ): Promise<U[]> {
     try {
@@ -417,7 +430,13 @@ export abstract class MongooseRepository<
 
       const where = this.filterWithActiveToNative(filter, includeAll)
 
-      const find = this.doc.find(where).sort(sortNative)
+      const selectNative = MongooseRepository.convertSelectToNative(select)
+
+      let find = this.doc.find(where).sort(sortNative).select(selectNative)
+
+      if (limit) {
+        find = find.limit(limit)
+      }
 
       const docs = await this.preparePopulate(find, populate)
 
@@ -430,11 +449,14 @@ export abstract class MongooseRepository<
   async findById(
     id: V,
     populate?: string | string[],
+    select?: SelectField,
     includeAll = false,
   ): Promise<U> {
     const objectId = MongooseRepository.convertToIdOrFail(id)
     try {
-      const find = this.doc.findById(objectId)
+      const selectNative = MongooseRepository.convertSelectToNative(select)
+
+      const find = this.doc.findById(objectId).select(selectNative)
 
       const doc = await this.preparePopulate(find, populate)
 
@@ -456,14 +478,17 @@ export abstract class MongooseRepository<
     filter?: Filter,
     populate?: string | string[],
     sort?: Sort | Sort[],
+    select?: SelectField,
     includeAll = false,
   ): Promise<U> {
     try {
       const sortNative = MongooseRepository.convertSortToNative(sort)
 
+      const selectNative = MongooseRepository.convertSelectToNative(select)
+
       const where = this.filterWithActiveToNative(filter, includeAll)
 
-      const find = this.doc.findOne(where).sort(sortNative)
+      const find = this.doc.findOne(where).sort(sortNative).select(selectNative)
 
       const doc = await this.preparePopulate(find, populate)
 
@@ -479,10 +504,13 @@ export abstract class MongooseRepository<
     filter?: Filter,
     populate?: string | string[],
     sort?: Sort | Sort[],
+    select?: SelectField,
     includeAll = false,
   ): Promise<ResultPaged<U>> {
     try {
       const sortNative = MongooseRepository.convertSortToNative(sort)
+
+      const selectNative = MongooseRepository.convertSelectToNative(select)
 
       const where = this.filterWithActiveToNative(filter, includeAll)
 
@@ -490,6 +518,7 @@ export abstract class MongooseRepository<
         .find(where)
         .sort(sortNative)
         .skip(first)
+        .select(selectNative)
         .limit(pageSize)
 
       const docs = await this.preparePopulate(find, populate)
@@ -680,7 +709,7 @@ export abstract class MongooseRepository<
     populate?: string | string[],
     includeAll?: boolean,
   ): Promise<U[]> {
-    const list = await this.find(filter, null, null, includeAll)
+    const list = await this.find(filter, null, null, null, null, includeAll)
     const ret: U[] = []
     for (const docDb of list) {
       try {
@@ -720,7 +749,7 @@ export abstract class MongooseRepository<
 
     await docDb.save()
 
-    return this.findById(id, null, true)
+    return this.findById(id, null, null, true)
   }
 
   async logicActive(id: V): Promise<U> {
